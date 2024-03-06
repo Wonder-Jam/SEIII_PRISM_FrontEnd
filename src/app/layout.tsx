@@ -4,6 +4,7 @@ import "./globals.css";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import LayoutCilentComponent from "../components/LayoutClient";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -20,9 +21,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <AntdRegistry>{children}</AntdRegistry>
-        <Analytics/>
-        <SpeedInsights/>
+        <AntdRegistry>
+          <LayoutCilentComponent>{children}</LayoutCilentComponent>
+        </AntdRegistry>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
