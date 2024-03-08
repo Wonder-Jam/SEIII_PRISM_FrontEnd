@@ -134,7 +134,7 @@ const TableList: React.FC = () => {
     ];
 
     return (
-        <div style={{backgroundColor: '#efefef'}}>
+        <div style={{backgroundColor: '#fff'}}>
         <PageContainer>
             <ProTable<API.NewListItem, API.PageParams>
                 headerTitle={'查询新闻'}
