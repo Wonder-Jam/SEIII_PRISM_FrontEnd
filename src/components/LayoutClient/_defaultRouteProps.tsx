@@ -1,3 +1,4 @@
+'use client'
 import { CrownFilled, SmileFilled, TabletFilled } from "@ant-design/icons";
 import { ProLayoutProps } from "@ant-design/pro-components";
 

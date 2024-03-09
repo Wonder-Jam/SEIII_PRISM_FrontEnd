@@ -4,8 +4,12 @@ import "./globals.css";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-import LayoutCilentComponent from "../components/LayoutClient";
-
+import dynamic from "next/dynamic";
+import { SWRConfigProvider } from "./client/provider";
+const LayoutCilentComponent = dynamic(
+  () => import("@/components/LayoutClient"),
+  { ssr: false }
+); // TODO: 解决Text content does not match server-rendered HTML的问题，但是无法使用SSR的优势了
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -22,7 +26,9 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <AntdRegistry>
-          <LayoutCilentComponent>{children}</LayoutCilentComponent>
+          <SWRConfigProvider>
+            <LayoutCilentComponent>{children}</LayoutCilentComponent>
+          </SWRConfigProvider>
         </AntdRegistry>
         <Analytics />
         <SpeedInsights />

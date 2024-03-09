@@ -14,7 +14,6 @@ import { useRouter, usePathname } from "next/navigation";
 const Layout = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
   const pathname = usePathname();
-  console.log(pathname)
   if (typeof document === "undefined") {
     return <div />;
   }
@@ -33,9 +32,8 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
           }}
         >
           <ProLayout
-            location={{
-              pathname,
-            }}
+            {..._layoutSettingProps}
+            {..._defaultRouteProps}
             menuItemRender={(item, dom) => {
               return (
                 <div
@@ -47,8 +45,9 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
                 </div>
               );
             }}
-            {..._layoutSettingProps}
-            {..._defaultRouteProps}
+            location={{
+              pathname,
+            }}
           >
             <PageContainer>
               <ProCard>{children}</ProCard>

@@ -1,3 +1,4 @@
+"use client";
 import {
   GithubFilled,
   InfoCircleFilled,
@@ -7,7 +8,6 @@ import {
 import { ProLayoutProps } from "@ant-design/pro-layout";
 import { Dropdown } from "antd";
 import { SearchInput } from "../SearchInput";
-
 
 export const _layoutSettingProps: ProLayoutProps = {
   breadcrumbRender: (router) => undefined,
