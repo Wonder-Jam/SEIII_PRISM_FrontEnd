@@ -13,7 +13,13 @@ import type {
 } from "@ant-design/pro-components";
 import { Button, Drawer, Input, message } from "antd";
 import React, { useRef, useState } from "react";
-import { useGetNewsList, removeNew, updateNew } from "@/services/news/api";
+import {
+  useGetNewsList,
+  removeNew,
+  updateNew,
+  NewListItem,
+  Pagination,
+} from "@/services/news/api";
 import UpdateForm, { FormValueType } from "@/components/UpdateTable/UpdateForm";
 
 const handleUpdate = async (fields: FormValueType) => {
@@ -22,8 +28,8 @@ const handleUpdate = async (fields: FormValueType) => {
     // TODO: 新闻字段修改
     await updateNew({
       title: fields.title,
-      desc: fields.desc,
-      key: fields.key,
+      source: fields.source,
+      id: fields.id,
     });
     hide();
     message.success("Configuration is successful");
@@ -35,12 +41,12 @@ const handleUpdate = async (fields: FormValueType) => {
   }
 };
 
-const handleRemove = async (selectedRows: API.NewListItem[]) => {
+const handleRemove = async (selectedRows: NewListItem[]) => {
   const hide = message.loading("正在删除");
   if (!selectedRows) return true;
   try {
     await removeNew({
-      key: selectedRows.map((row) => row.key),
+      key: selectedRows.map((row) => row.id),
     });
     hide();
     message.success("Deleted successfully and will refresh soon");
@@ -57,12 +63,12 @@ const TableList: React.FC = () => {
     useState<boolean>(false);
   const [showDetail, setShowDetail] = useState<boolean>(false);
   const actionRef = useRef<ActionType>();
-  const [currentRow, setCurrentRow] = useState<API.NewListItem>();
-  const [selectedRowsState, setSelectedRows] = useState<API.NewListItem[]>([]);
-  const columns: ProColumns<API.NewListItem>[] = [
+  const [currentRow, setCurrentRow] = useState<NewListItem>();
+  const [selectedRowsState, setSelectedRows] = useState<NewListItem[]>([]);
+  const columns: ProColumns<NewListItem>[] = [
     {
       title: "新闻标题",
-      dataIndex: "name",
+      dataIndex: "title",
       tip: "支持模糊搜索",
       render: (dom, entity) => {
         return (
@@ -78,55 +84,38 @@ const TableList: React.FC = () => {
       },
     },
     {
-      title: "来源",
-      dataIndex: "desc",
+      title: "发布日期",
+      sorter: true,
+      dataIndex: "date",
+      valueType: "date",
+    },
+    {
+      title: "发布来源",
+      dataIndex: "source",
+      valueType: "textarea",
+    },
+    {
+      title: "发布网址",
+      dataIndex: "url",
+      valueType: "textarea",
+    },
+    {
+      title: "类别",
+      dataIndex: "category",
       valueType: "textarea",
     },
     {
       title: "关键词",
-      dataIndex: "desc",
+      dataIndex: "keywords",
       valueType: "textarea",
-    },
-    {
-      title: "点击数",
-      dataIndex: "callNo",
-      search: false,
-      sorter: true,
-      hideInForm: true,
-      renderText: (val: string) => `${val}${"万"}`,
-    },
-    {
-      title: "发布时间",
-      sorter: true,
-      dataIndex: "updatedAt",
-      valueType: "dateTime",
-      renderFormItem: (item, { defaultRender, ...rest }, form) => {
-        const status = form.getFieldValue("status");
-        if (`${status}` === "0") {
-          return false;
-        }
-        if (`${status}` === "3") {
-          return <Input {...rest} placeholder={"请输入异常原因！"} />;
-        }
-        return defaultRender(item);
-      },
     },
     {
       title: "操作",
       dataIndex: "option",
       valueType: "option",
       render: (_, record) => [
-        <a
-          key="config"
-          onClick={() => {
-            handleUpdateModalVisible(true);
-            setCurrentRow(record);
-          }}
-        >
+        <a key="config" onClick={() => message.info("wait")}>
           更改
-        </a>,
-        <a key="subscribeAlert" href="https://procomponents.ant.design/">
-          收藏
         </a>,
       ],
     },
@@ -135,10 +124,10 @@ const TableList: React.FC = () => {
   return (
     <div style={{ backgroundColor: "#fff" }}>
       <PageContainer>
-        <ProTable<API.NewListItem, API.PageParams>
+        <ProTable<NewListItem, Pagination>
           headerTitle={"查询新闻"}
           actionRef={actionRef}
-          rowKey="key"
+          rowKey={(record) => record.id}
           search={{
             labelWidth: 120,
           }}
@@ -166,10 +155,10 @@ const TableList: React.FC = () => {
                 项 &nbsp;&nbsp;
                 <span>
                   总搜集新闻数量{" "}
-                  {selectedRowsState.reduce(
+                  {/* {selectedRowsState.reduce(
                     (pre, item) => pre + item.callNo!,
                     0
-                  )}{" "}
+                  )}{" "} */}
                   条
                 </span>
               </div>
@@ -211,7 +200,7 @@ const TableList: React.FC = () => {
         {/* Drawer 详细展示新闻 */}
         <Drawer
           width={600}
-          visible={showDetail}
+          open={showDetail}
           onClose={() => {
             setCurrentRow(undefined);
             setShowDetail(false);
@@ -219,7 +208,7 @@ const TableList: React.FC = () => {
           closable={false}
         >
           {currentRow?.title && (
-            <ProDescriptions<API.NewListItem>
+            <ProDescriptions<NewListItem>
               column={2}
               title={currentRow?.title}
               request={async () => ({
@@ -228,7 +217,7 @@ const TableList: React.FC = () => {
               params={{
                 id: currentRow?.title,
               }}
-              columns={columns as ProDescriptionsItemProps<API.NewListItem>[]}
+              columns={columns as ProDescriptionsItemProps<NewListItem>[]}
             />
           )}
         </Drawer>

@@ -1,52 +1,62 @@
 // @ts-ignore
 /* eslint-disable */
 
-import { useDelete, useGet } from "../fetcher";
-type NewListItem = {
-  key?: number;
+import { Fetcher, useDelete, useGet } from "../fetcher";
+
+export type NewListItem = {
+  id: number;
   title: string;
-  desc: string;
-  callNo?: number;
+  date: string;
+  source: string;
+  url?: string;
+  category?: string;
+  keywords: string;
+};
+export type NewList = {
+  page: NewListItem[];
+  count: number;
 };
 
-type NewList = {
-  data?: NewListItem[];
-  /** 列表的内容总数 */
-  total?: number;
-  success?: boolean;
-};
-
-type Pagination = {
-  /** 当前的页码 */
+export type ProTablePagination = {
   current?: number;
-  /** 页面的容量 */
   pageSize?: number;
 };
-export async function removeNew({ key }: { key: (number | undefined)[]  }) {
-    const deletePromise = key.map((id) => {
-       return useDelete(`api/news/${id}`)
-    })
-    const deleteResults = await Promise.all(deletePromise)
-    return deleteResults
-  // TODO: 请求路径
-  // return request<Record<string, any>>('/api/news/{id}', {
-  //     method: 'DELETE',
-  //     ...(options || {}),
-  // });
+export type Pagination = {
+  size: number;
+  current: number;
+};
+
+export async function removeNew({ key }: { key: (number | undefined)[] }) {
+  const deletePromise = key.map((id) => {
+    return useDelete(`/api/news/${id}`);
+  });
+  const deleteResults = await Promise.all(deletePromise);
+  return deleteResults;
 }
 
 export async function useGetNewsList(
-  params: Pagination,
+  params: ProTablePagination,
   options?: { [key: string]: any }
 ) {
-  return useGet<NewListItem[], Pagination>("/api/news/list", params, options);
-  // return request<API.NewList>('/api/news/list', {
-  //     method: 'GET',
-  //     params: {
-  //         ...params,
-  //     },
-  //     ...(options || {}),
-  // });
+  const data = await Fetcher<NewList>({
+    input: `/api/news/list?${new URLSearchParams(
+      JSON.parse(
+        JSON.stringify({
+          size: params.pageSize,
+          current: 0, //TODO
+        })
+      )
+    ).toString()}`,
+    init: {},
+  });
+  // const { data } = useGet<NewList,Pagination>('/api/news/list',{
+  //   current:params.current ?? 0,
+  //   size:params.pageSize ?? 10
+  // }) 不能直接调用hook - 如果在request中使用的话
+  return {
+    data: data.page,
+    success: true,
+  };
 }
 
 export async function useGetNewsDetail(id: number) {
