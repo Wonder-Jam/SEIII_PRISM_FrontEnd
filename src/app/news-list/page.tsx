@@ -22,8 +22,6 @@ const handleUpdate = async (fields: FormValueType) => {
     // TODO: 新闻字段修改
     await updateNew({
       title: fields.title,
-      desc: fields.desc,
-      key: fields.key,
     });
     hide();
     message.success("Configuration is successful");
@@ -62,7 +60,7 @@ const TableList: React.FC = () => {
   const columns: ProColumns<API.NewListItem>[] = [
     {
       title: "新闻标题",
-      dataIndex: "name",
+      dataIndex: "title",
       tip: "支持模糊搜索",
       render: (dom, entity) => {
         return (
@@ -79,26 +77,20 @@ const TableList: React.FC = () => {
     },
     {
       title: "来源",
-      dataIndex: "desc",
+      dataIndex: "source",
       valueType: "textarea",
     },
     {
       title: "关键词",
-      dataIndex: "desc",
+      search: false,
+      dataIndex: "keywords",
       valueType: "textarea",
     },
     {
-      title: "点击数",
-      dataIndex: "callNo",
+      title: "发布时间",
       search: false,
       sorter: true,
-      hideInForm: true,
-      renderText: (val: string) => `${val}${"万"}`,
-    },
-    {
-      title: "发布时间",
-      sorter: true,
-      dataIndex: "updatedAt",
+      dataIndex: "date",
       valueType: "dateTime",
       renderFormItem: (item, { defaultRender, ...rest }, form) => {
         const status = form.getFieldValue("status");
@@ -135,14 +127,49 @@ const TableList: React.FC = () => {
   return (
     <div style={{ backgroundColor: "#fff" }}>
       <PageContainer>
-        <ProTable<API.NewListItem, API.PageParams>
+        <ProTable<API.NewListItem>
           headerTitle={"查询新闻"}
           actionRef={actionRef}
           rowKey="key"
           search={{
             labelWidth: 120,
           }}
-          request={useGetNewsList}
+          request={async (
+              params,
+              sort,
+              filter,
+          ) => {
+            // const response = await useGetNewsList(
+            //   params, {"sort": sort, "filter": filter}
+            // );
+            // TODO: 错误处理
+            console.log("params: ")
+            console.log(params);
+            console.log("sort: ")
+            console.log(sort)
+            console.log("filter: ")
+            console.log(filter)
+
+            let testo = {
+              data: [{
+                key: 1,
+                title: "test1",
+                keywords: "test 1",
+                source: "xinhuawang",
+                date: "20240311",
+              },{
+                key: 2,
+                title: "test2",
+                keywords: "-",
+                source: "xinhuawang",
+                date: "20240311",
+              }
+              ],
+              success: true,
+              total: 1,
+            };
+            return new Promise(resolve => resolve(testo));
+          }}
           columns={columns}
           rowSelection={{
             onChange: (_, selectedRows) => {
@@ -166,10 +193,7 @@ const TableList: React.FC = () => {
                 项 &nbsp;&nbsp;
                 <span>
                   总搜集新闻数量{" "}
-                  {selectedRowsState.reduce(
-                    (pre, item) => pre + item.callNo!,
-                    0
-                  )}{" "}
+                  {selectedRowsState.length}{" "}
                   条
                 </span>
               </div>

@@ -5,8 +5,9 @@ declare namespace API {
     type NewListItem = {
         key?: number;
         title: string;
-        desc: string;
-        callNo?: number;
+        keywords: string;
+        source: string;
+        date: string;
     }
 
     type NewList = {
