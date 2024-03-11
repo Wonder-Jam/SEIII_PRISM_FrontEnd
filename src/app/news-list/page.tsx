@@ -157,10 +157,7 @@ const TableList: React.FC = () => {
                 项 &nbsp;&nbsp;
                 <span>
                   总搜集新闻数量{" "}
-                  {/* {selectedRowsState.reduce(
-                    (pre, item) => pre + item.callNo!,
-                    0
-                  )}{" "} */}
+                  {selectedRowsState.length}{" "}
                   条
                 </span>
               </div>
