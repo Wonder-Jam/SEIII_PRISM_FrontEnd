@@ -35,7 +35,9 @@ export async function removeNew({ key }: { key: (number | undefined)[] }) {
   return deleteResults;
 }
 
-export async function GetNewsList(params: ProTablePagination) {
+export async function getNewsList(params: ProTablePagination, sort: any, fliter: any) {
+  console.log("getNewsList");
+  console.log(sort, fliter);
   const data = await Fetcher<NewList>({
     input: `/api/news/list?${new URLSearchParams(
       JSON.parse(

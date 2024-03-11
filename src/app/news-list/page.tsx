@@ -2,7 +2,7 @@
 
 import UpdateForm, { FormValueType } from "@/components/UpdateTable/UpdateForm";
 import {
-  GetNewsList,
+  getNewsList,
   NewListItem,
   Pagination,
   removeNew,
@@ -133,7 +133,7 @@ const TableList: React.FC = () => {
           search={{
             labelWidth: 120,
           }}
-          request={GetNewsList}
+          request={getNewsList}
           columns={columns}
           rowSelection={{
             onChange: (_, selectedRows) => {
