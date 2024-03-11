@@ -1,3 +1,4 @@
+import { message } from "antd";
 import useSWR, { SWRConfiguration } from "swr";
 
 interface ResponseDataWrapper<T> {
@@ -18,10 +19,11 @@ export const Fetcher = async <T>(params: FetcherPayLoad): Promise<T> => {
   }).catch(() => {
     throw new Error("NetWork Connection Error");
   });
+  const responseData: ResponseDataWrapper<T> = await response.json();
   if (!response.ok) {
+    message.error(responseData.msg)
     throw new Error(`Request failed with status ${response.status}`);
   }
-  const responseData: ResponseDataWrapper<T> = await response.json();
   return responseData.data;
 };
 
