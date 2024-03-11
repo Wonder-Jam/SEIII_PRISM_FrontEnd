@@ -12,6 +12,7 @@ export type NewListItem = {
   category?: string;
   keywords: string;
 };
+
 export type NewList = {
   page: NewListItem[];
   count: number;
@@ -34,10 +35,7 @@ export async function removeNew({ key }: { key: (number | undefined)[] }) {
   return deleteResults;
 }
 
-export async function useGetNewsList(
-  params: ProTablePagination,
-  options?: { [key: string]: any }
-) {
+export async function GetNewsList(params: ProTablePagination) {
   const data = await Fetcher<NewList>({
     input: `/api/news/list?${new URLSearchParams(
       JSON.parse(
@@ -59,8 +57,8 @@ export async function useGetNewsList(
   };
 }
 
-export async function useGetNewsDetail(id: number) {
-  return useGet<NewListItem>(`/api/news/${id}`);
+export function useGetNewsDetail(id: number) {
+  return useGet<string>(`/api/news/${id}`);
 }
 
 export async function updateNew(options?: { [key: string]: any }) {

@@ -1,26 +1,27 @@
 "use client";
 
+import UpdateForm, { FormValueType } from "@/components/UpdateTable/UpdateForm";
+import {
+  GetNewsList,
+  NewListItem,
+  Pagination,
+  removeNew,
+  updateNew,
+  useGetNewsDetail,
+} from "@/services/news/api";
+import type {
+  ActionType,
+  ProColumns,
+  ProDescriptionsItemProps,
+} from "@ant-design/pro-components";
 import {
   FooterToolbar,
   PageContainer,
   ProDescriptions,
   ProTable,
 } from "@ant-design/pro-components";
-import type {
-  ActionType,
-  ProColumns,
-  ProDescriptionsItemProps,
-} from "@ant-design/pro-components";
-import { Button, Drawer, Input, message } from "antd";
+import { Button, Drawer, Typography, message } from "antd";
 import React, { useRef, useState } from "react";
-import {
-  useGetNewsList,
-  removeNew,
-  updateNew,
-  NewListItem,
-  Pagination,
-} from "@/services/news/api";
-import UpdateForm, { FormValueType } from "@/components/UpdateTable/UpdateForm";
 
 const handleUpdate = async (fields: FormValueType) => {
   const hide = message.loading("Configuring");
@@ -65,6 +66,7 @@ const TableList: React.FC = () => {
   const actionRef = useRef<ActionType>();
   const [currentRow, setCurrentRow] = useState<NewListItem>();
   const [selectedRowsState, setSelectedRows] = useState<NewListItem[]>([]);
+  const { data: DetailContent } = useGetNewsDetail(currentRow?.id ?? 1);
   const columns: ProColumns<NewListItem>[] = [
     {
       title: "新闻标题",
@@ -131,7 +133,7 @@ const TableList: React.FC = () => {
           search={{
             labelWidth: 120,
           }}
-          request={useGetNewsList}
+          request={GetNewsList}
           columns={columns}
           rowSelection={{
             onChange: (_, selectedRows) => {
@@ -211,15 +213,14 @@ const TableList: React.FC = () => {
             <ProDescriptions<NewListItem>
               column={2}
               title={currentRow?.title}
-              request={async () => ({
-                data: currentRow || {},
-              })}
+              dataSource={currentRow}
               params={{
                 id: currentRow?.title,
               }}
               columns={columns as ProDescriptionsItemProps<NewListItem>[]}
             />
           )}
+          <Typography.Text>{DetailContent}</Typography.Text>
         </Drawer>
       </PageContainer>
     </div>

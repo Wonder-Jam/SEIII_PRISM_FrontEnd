@@ -4,7 +4,7 @@ const nextConfig = {
         return [
             {
                 source:'/api/:slug*',
-                destination:`http://localhost:8080/api/:slug*`, // 404 除了路径，也有看参数是否正确
+                destination:`${process.env.API_PREFIX}/api/:slug*`, // 404 除了路径，也有看参数是否正确
             }
         ]
     }
