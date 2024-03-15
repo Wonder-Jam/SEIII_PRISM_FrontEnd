@@ -165,7 +165,7 @@ const TableList: React.FC = () => {
         setDataSource(data.data);
         setPagination((prev) => ({
           ...prev,
-          total: data.total,// 后端分页了，所以需要后端传total过来
+          total: data.total, // 后端分页了，所以需要后端传total过来
         }));
       }
     };
@@ -193,6 +193,8 @@ const TableList: React.FC = () => {
           }}
           pagination={{
             total: pagination.total,
+            pageSize: pagination.pageSize,
+            current: pagination.current,
             onChange: (page, pageSize) => {
               setPagination((prev) => ({
                 total: prev.total,
@@ -207,12 +209,15 @@ const TableList: React.FC = () => {
                 <Tooltip title="支持模糊搜索">
                   <Input.Search
                     placeholder="请搜索"
-                    onSearch={(value) =>
+                    onSearch={(value) => {
+                      if (value === "") {
+                        setPagination((prev) => ({ ...prev, current: 1 }));
+                      }
                       setFuzzySearchProps((prev) => ({
                         ...prev,
                         sentence: value,
-                      }))
-                    }
+                      }));
+                    }}
                   />
                 </Tooltip>
               </>
