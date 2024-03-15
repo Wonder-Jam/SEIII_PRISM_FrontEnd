@@ -3,11 +3,15 @@
 import UpdateForm, { FormValueType } from "@/components/UpdateTable/UpdateForm";
 import { useFetcher } from "@/services/fetcher";
 import {
-  GetNewsList,
+  FuzzySearchRequest,
+  getNewsList,
   NewListItem,
   Pagination,
+  fuzzySearchNewsList,
   removeNew,
-  updateNew
+  updateNew,
+  useGetNewsDetail,
+  ProTablePagination,
 } from "@/services/news/api";
 import type {
   ActionType,
@@ -19,9 +23,18 @@ import {
   PageContainer,
   ProDescriptions,
   ProTable,
+  usePrevious,
 } from "@ant-design/pro-components";
-import { Button, Drawer, Typography, message } from "antd";
-import React, { useRef, useState } from "react";
+import {
+  Button,
+  Drawer,
+  Input,
+  Select,
+  Tooltip,
+  Typography,
+  message,
+} from "antd";
+import React, { useEffect, useRef, useState } from "react";
 
 const handleUpdate = async (fields: FormValueType) => {
   const hide = message.loading("Configuring");
@@ -65,6 +78,17 @@ const TableList: React.FC = () => {
   const [showDetail, setShowDetail] = useState<boolean>(false);
   const actionRef = useRef<ActionType>();
   const [currentRow, setCurrentRow] = useState<NewListItem>();
+  const [dataSource, setDataSource] = useState<NewListItem[]>();
+  const [pagination, setPagination] = useState<ProTablePagination>({
+    current: 1,
+    pageSize: 10,
+    total: 10,
+  });
+  const [fuzzySearchProps, setFuzzySearchProps] = useState<FuzzySearchRequest>({
+    sentence: "",
+    top: 10,
+  });
+  const prevFuzzyProps = usePrevious(fuzzySearchProps);
   const [selectedRowsState, setSelectedRows] = useState<NewListItem[]>([]);
   const columns: ProColumns<NewListItem>[] = [
     {
@@ -121,7 +145,38 @@ const TableList: React.FC = () => {
       ],
     },
   ];
-
+  useEffect(() => {
+    // 由于模糊搜索+普通展示的接口不同，且前者不分页，后者做分页处理，因此需要进行条件区分，统一注入到dataSource
+    const fetchData = async () => {
+      if (
+        fuzzySearchProps.sentence !== "" &&
+        (fuzzySearchProps.sentence !== prevFuzzyProps?.sentence || // 防止页面切换时触发重新请求
+          fuzzySearchProps.top !== prevFuzzyProps.top) // 防止top修改时不触发重新请求
+      ) {
+        const data = await fuzzySearchNewsList(fuzzySearchProps);
+        setDataSource(data);
+        setPagination({
+          current: 1,
+          pageSize: data.length,
+          total: data.length, // 后端没有分页，所以可以通过length知道total
+        });
+      } else if (fuzzySearchProps.sentence === "") {
+        console.log(pagination);
+        const data = await getNewsList(pagination);
+        setDataSource(data.data);
+        setPagination((prev) => ({
+          ...prev,
+          total: data.total,// 后端分页了，所以需要后端传total过来
+        }));
+      }
+    };
+    fetchData();
+  }, [
+    pagination.current,
+    pagination.pageSize,
+    fuzzySearchProps.sentence,
+    fuzzySearchProps.top,
+  ]);
   return (
     <div style={{ backgroundColor: "#fff" }}>
       <PageContainer>
@@ -129,15 +184,57 @@ const TableList: React.FC = () => {
           headerTitle={"查询新闻"}
           actionRef={actionRef}
           rowKey={(record) => record.id}
-          search={{
-            labelWidth: 120,
-          }}
-          request={GetNewsList}
+          search={false}
+          dataSource={dataSource}
           columns={columns}
           rowSelection={{
             onChange: (_, selectedRows) => {
               setSelectedRows(selectedRows);
             },
+          }}
+          pagination={{
+            total: pagination.total,
+            onChange: (page, pageSize) => {
+              setPagination((prev) => ({
+                total: prev.total,
+                current: page,
+                pageSize,
+              }));
+            },
+          }}
+          toolbar={{
+            search: (
+              <>
+                <Tooltip title="支持模糊搜索">
+                  <Input.Search
+                    placeholder="请搜索"
+                    onSearch={(value) =>
+                      setFuzzySearchProps((prev) => ({
+                        ...prev,
+                        sentence: value,
+                      }))
+                    }
+                  />
+                </Tooltip>
+              </>
+            ),
+            actions: [
+              <>
+                <Typography.Text>模糊搜索数：</Typography.Text>
+                <Select
+                  defaultValue={10}
+                  options={[
+                    { value: 10, label: 10 },
+                    { value: 20, label: 20 },
+                    { value: 50, label: 50 },
+                    { value: 100, label: 100 },
+                  ]}
+                  onChange={(value) =>
+                    setFuzzySearchProps((prev) => ({ ...prev, top: value }))
+                  }
+                />
+              </>,
+            ],
           }}
         />
         {/* 选中行的操作 */}
@@ -211,12 +308,7 @@ interface DetailProps {
 }
 const DetailDrawer = (props: DetailProps) => {
   const { showDetail, onClose, currentRow, columns } = props;
-  const { data } = useFetcher<string>({
-    input: `/api/news/${currentRow?.id}`,
-    init: {
-      method: "GET",
-    },
-  });
+  const { data } = useGetNewsDetail(currentRow?.id);
   return (
     <Drawer width={600} open={showDetail} onClose={onClose} closable={false}>
       {currentRow?.title && (

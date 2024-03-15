@@ -73,7 +73,7 @@ export const useFetcher = <T>(
   }, [params.input, JSON.stringify(params.init.body)]);
   return { isLoading, data, error };
 };
-const encodeUriFromParams = <T extends object | undefined = undefined>(
+export const encodeUriFromParams = <T extends object | undefined = undefined>(
   params?: T
 ): string => {
   if (!params) {

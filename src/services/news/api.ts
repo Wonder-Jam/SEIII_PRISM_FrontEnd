@@ -1,7 +1,7 @@
 // @ts-ignore
 /* eslint-disable */
 
-import { Fetcher } from "../fetcher";
+import { Fetcher, encodeUriFromParams, useFetcher } from "../fetcher";
 
 export type NewListItem = {
   id: number;
@@ -19,8 +19,9 @@ export type NewList = {
 };
 
 export type ProTablePagination = {
-  current?: number;
-  pageSize?: number;
+  current: number;
+  pageSize: number;
+  total: number;
 };
 export type Pagination = {
   size: number;
@@ -40,13 +41,13 @@ export async function removeNew({ key }: { key: (number | undefined)[] }) {
   return deleteResults;
 }
 
-export async function GetNewsList(params: ProTablePagination) {
+export async function getNewsList(params: ProTablePagination) {
   const data = await Fetcher<NewList>({
     input: `/api/news/list?${new URLSearchParams(
       JSON.parse(
         JSON.stringify({
           size: params.pageSize,
-          current: 0, //TODO
+          current: params.current - 1, //TODO
         })
       )
     ).toString()}`,
@@ -58,7 +59,8 @@ export async function GetNewsList(params: ProTablePagination) {
   // }) 不能直接调用hook - 如果在request中使用的话
   return {
     data: data.page,
-    success: true,
+    total: data.count * params.pageSize, //TODO： total的计算后端应该直接返回
+    success: data.page.length !== 0,
   };
 }
 
@@ -70,6 +72,29 @@ export async function getNewsDetail(id: number) {
     },
   });
 }
+
+export interface FuzzySearchRequest {
+  sentence: string;
+  top: number;
+}
+
+export async function fuzzySearchNewsList(params: FuzzySearchRequest) {
+  return await Fetcher<NewListItem[]>({
+    input: "/api/news/search" + encodeUriFromParams(params),
+    init: {
+      method: "GET",
+    },
+  });
+}
+
+export const useGetNewsDetail = (id: number | undefined) => {
+  return useFetcher<string>({
+    input: `/api/news/${id}`,
+    init: {
+      method: "GET",
+    },
+  });
+};
 
 export async function updateNew(options?: { [key: string]: any }) {
   // TODO: 修改请求方式和路径
