@@ -1,7 +1,5 @@
-import { throttleImmediately } from "@/util/throttle";
 import { message } from "antd";
 import { useEffect, useState } from "react";
-import useSWR, { SWRConfiguration } from "swr";
 
 interface ResponseDataWrapper<T> {
   code: number;
