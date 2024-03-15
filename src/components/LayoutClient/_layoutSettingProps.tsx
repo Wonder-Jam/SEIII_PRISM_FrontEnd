@@ -6,9 +6,9 @@ import {
   QuestionCircleFilled,
 } from "@ant-design/icons";
 import { ProLayoutProps } from "@ant-design/pro-layout";
-import { Dropdown } from "antd";
+import { Dropdown, Typography } from "antd";
 import { SearchInput } from "../SearchInput";
-
+import Image from "next/image";
 export const _layoutSettingProps: ProLayoutProps = {
   breadcrumbRender: (router) => undefined,
   token: {
@@ -57,8 +57,9 @@ export const _layoutSettingProps: ProLayoutProps = {
   headerTitleRender: (logo, title, _) => {
     const defaultDom = (
       <a>
-        {logo}
-        {title}
+        {/* {logo} */}
+        <Image alt="logo" src={"/logo.svg"} width={30} height={30} />
+        <Typography.Title>PRISM 开源情报分析系统</Typography.Title>
       </a>
     );
     if (typeof window === "undefined") return defaultDom;
