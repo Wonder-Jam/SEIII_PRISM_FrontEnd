@@ -1,17 +1,16 @@
 "use client";
 
 import UpdateForm, { FormValueType } from "@/components/UpdateTable/UpdateForm";
-import { useFetcher } from "@/services/fetcher";
 import {
   FuzzySearchRequest,
-  getNewsList,
   NewListItem,
   Pagination,
+  ProTablePagination,
   fuzzySearchNewsList,
+  getNewsList,
   removeNew,
   updateNew,
   useGetNewsDetail,
-  ProTablePagination,
 } from "@/services/news/api";
 import type {
   ActionType,
