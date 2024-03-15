@@ -1,13 +1,13 @@
 "use client";
 
 import UpdateForm, { FormValueType } from "@/components/UpdateTable/UpdateForm";
+import { useFetcher } from "@/services/fetcher";
 import {
   GetNewsList,
   NewListItem,
   Pagination,
   removeNew,
-  updateNew,
-  useGetNewsDetail,
+  updateNew
 } from "@/services/news/api";
 import type {
   ActionType,
@@ -66,7 +66,6 @@ const TableList: React.FC = () => {
   const actionRef = useRef<ActionType>();
   const [currentRow, setCurrentRow] = useState<NewListItem>();
   const [selectedRowsState, setSelectedRows] = useState<NewListItem[]>([]);
-  const { data: DetailContent } = useGetNewsDetail(currentRow?.id ?? 1);
   const columns: ProColumns<NewListItem>[] = [
     {
       title: "新闻标题",
@@ -155,11 +154,7 @@ const TableList: React.FC = () => {
                   {selectedRowsState.length}
                 </a>{" "}
                 项 &nbsp;&nbsp;
-                <span>
-                  总搜集新闻数量{" "}
-                  {selectedRowsState.length}{" "}
-                  条
-                </span>
+                <span>总搜集新闻数量 {selectedRowsState.length} 条</span>
               </div>
             }
           >
@@ -196,32 +191,47 @@ const TableList: React.FC = () => {
           updateModalVisible={updateModalVisible}
           values={currentRow || {}}
         />
+        <DetailDrawer
+          onClose={() => setShowDetail(false)}
+          showDetail={showDetail}
+          currentRow={currentRow}
+          columns={columns}
+        />
         {/* Drawer 详细展示新闻 */}
-        <Drawer
-          width={600}
-          open={showDetail}
-          onClose={() => {
-            setCurrentRow(undefined);
-            setShowDetail(false);
-          }}
-          closable={false}
-        >
-          {currentRow?.title && (
-            <ProDescriptions<NewListItem>
-              column={2}
-              title={currentRow?.title}
-              dataSource={currentRow}
-              params={{
-                id: currentRow?.title,
-              }}
-              columns={columns as ProDescriptionsItemProps<NewListItem>[]}
-            />
-          )}
-          <Typography.Text>{DetailContent}</Typography.Text>
-        </Drawer>
       </PageContainer>
     </div>
   );
 };
 
+interface DetailProps {
+  showDetail: boolean;
+  onClose: () => void;
+  currentRow?: NewListItem;
+  columns: ProColumns<NewListItem>[];
+}
+const DetailDrawer = (props: DetailProps) => {
+  const { showDetail, onClose, currentRow, columns } = props;
+  const { data } = useFetcher<string>({
+    input: `/api/news/${currentRow?.id}`,
+    init: {
+      method: "GET",
+    },
+  });
+  return (
+    <Drawer width={600} open={showDetail} onClose={onClose} closable={false}>
+      {currentRow?.title && (
+        <ProDescriptions<NewListItem>
+          column={2}
+          title={currentRow?.title}
+          dataSource={currentRow}
+          params={{
+            id: currentRow?.title,
+          }}
+          columns={columns as ProDescriptionsItemProps<NewListItem>[]}
+        />
+      )}
+      <Typography.Text>{data}</Typography.Text>
+    </Drawer>
+  );
+};
 export default TableList;

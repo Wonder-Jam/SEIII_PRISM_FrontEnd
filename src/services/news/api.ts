@@ -1,7 +1,7 @@
 // @ts-ignore
 /* eslint-disable */
 
-import { Fetcher, useDelete, useGet } from "../fetcher";
+import { Fetcher } from "../fetcher";
 
 export type NewListItem = {
   id: number;
@@ -29,7 +29,12 @@ export type Pagination = {
 
 export async function removeNew({ key }: { key: (number | undefined)[] }) {
   const deletePromise = key.map((id) => {
-    return useDelete(`/api/news/${id}`);
+    return Fetcher({
+      input: `/api/news/${id}`,
+      init: {
+        method: "DELETE",
+      },
+    });
   });
   const deleteResults = await Promise.all(deletePromise);
   return deleteResults;
@@ -57,8 +62,13 @@ export async function GetNewsList(params: ProTablePagination) {
   };
 }
 
-export function useGetNewsDetail(id: number) {
-  return useGet<string>(`/api/news/${id}`);
+export async function getNewsDetail(id: number) {
+  return await Fetcher<string>({
+    input: `/api/news/${id}`,
+    init: {
+      method: "GET",
+    },
+  });
 }
 
 export async function updateNew(options?: { [key: string]: any }) {
