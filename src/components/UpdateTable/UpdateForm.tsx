@@ -1,4 +1,4 @@
-import { NewListItem } from "@/services/news/api";
+import {NewListItem, useGetNewsDetail} from "@/services/news/api";
 import {
   ProFormDateTimePicker,
   ProFormRadio,
@@ -11,12 +11,15 @@ import { Modal } from "antd";
 import React from "react";
 
 export type FormValueType = {
-  target?: string;
-  template?: string;
-  type?: string;
-  time?: string;
-  frequency?: string;
-} & Partial<NewListItem>;
+    id: number;
+    title: string;
+    date: string;
+    source: string;
+    url?: string;
+    category?: string;
+    keywords?: string;
+    content?: string;
+};
 
 export type UpdateFormProps = {
   onCancel: (flag?: boolean, formVals?: FormValueType) => void;
@@ -25,6 +28,7 @@ export type UpdateFormProps = {
   values: Partial<NewListItem>;
 };
 const UpdateForm: React.FC<UpdateFormProps> = (props) => {
+    const { data } = useGetNewsDetail(props.values.id);
   return (
     <StepsForm
       stepsProps={{
@@ -42,7 +46,7 @@ const UpdateForm: React.FC<UpdateFormProps> = (props) => {
               },
             }}
             destroyOnClose
-            title={"规则配置"}
+            title={"新闻修改"}
             open={props.updateModalVisible}
             footer={submitter}
             onCancel={() => {
@@ -57,103 +61,115 @@ const UpdateForm: React.FC<UpdateFormProps> = (props) => {
     >
       <StepsForm.StepForm
         initialValues={{
-          name: props.values.title,
-          source: props.values.source,
+            id: props.values.id || 0,
+          title: props.values.title || "",
+            url: props.values.url || "",
+          source: props.values.source || "",
+            date: props.values.date || "",
+            keywords: props.values.keywords || "",
+            category: props.values.category || "",
         }}
         title={"基本信息"}
       >
+          <ProFormText
+              name="id"
+              label={"新闻id"}
+              width="md"
+              rules={[
+                  {
+                      required: true,
+                      message: "请输入新闻名称！",
+                  },
+              ]}
+              disabled
+          />
         <ProFormText
-          name="name"
-          label={"规则名称"}
+          name="title"
+          label={"新闻名称"}
           width="md"
           rules={[
             {
               required: true,
-              message: "请输入规则名称！",
+              message: "请输入新闻名称！",
             },
           ]}
         />
-        <ProFormTextArea
-          name="desc"
-          width="md"
-          label={"规则描述"}
-          placeholder={"请输入至少五个字符"}
-          rules={[
-            {
-              required: true,
-              message: "请输入至少五个字符的规则描述！",
-              min: 5,
-            },
-          ]}
-        />
+          <ProFormText
+              name="url"
+              label={"url"}
+              width="md"
+              rules={[
+                  {
+                      required: true,
+                      message: "请输入url！",
+                  },
+              ]}
+          />
+          <ProFormDateTimePicker
+              name="date"
+              width="md"
+              label={"开始时间"}
+              rules={[
+                  {
+                      required: true,
+                      message: "请选择开始时间！",
+                  },
+              ]}
+          />
+          <ProFormText
+              name="source"
+              label={"来源"}
+              width="md"
+              rules={[
+                  {
+                      required: false,
+                      message: "请输入新闻来源！",
+                  },
+              ]}
+          />
+          <ProFormText
+              name="keywords"
+              width="md"
+              label={"关键词描述"}
+              placeholder={"推荐使用空格分词"}
+              rules={[
+                  {
+                      required: false,
+                      message: "选填",
+                      min: 0,
+                  },
+              ]}
+          />
+          <ProFormText
+              name="category"
+              label={"类别"}
+              width="md"
+              rules={[
+                  {
+                      required: false,
+                      message: "选填",
+                      min: 0,
+                  },
+              ]}
+          />
       </StepsForm.StepForm>
       <StepsForm.StepForm
         initialValues={{
-          target: "0",
-          template: "0",
+            content: data
         }}
-        title={"配置规则属性"}
+        title={"新闻正文"}
       >
-        <ProFormSelect
-          name="target"
-          width="md"
-          label={"监控对象"}
-          valueEnum={{
-            0: "表一",
-            1: "表二",
-          }}
-        />
-        <ProFormSelect
-          name="template"
-          width="md"
-          label={"规则模板"}
-          valueEnum={{
-            0: "规则模板一",
-            1: "规则模板二",
-          }}
-        />
-        <ProFormRadio.Group
-          name="type"
-          label={"规则类型"}
-          options={[
-            {
-              value: "0",
-              label: "强",
-            },
-            {
-              value: "1",
-              label: "弱",
-            },
-          ]}
-        />
-      </StepsForm.StepForm>
-      <StepsForm.StepForm
-        initialValues={{
-          type: "1",
-          frequency: "month",
-        }}
-        title={"设定调度周期"}
-      >
-        <ProFormDateTimePicker
-          name="time"
-          width="md"
-          label={"开始时间"}
-          rules={[
-            {
-              required: true,
-              message: "请选择开始时间！",
-            },
-          ]}
-        />
-        <ProFormSelect
-          name="frequency"
-          label={"监控对象"}
-          width="md"
-          valueEnum={{
-            month: "月",
-            week: "周",
-          }}
-        />
+          <ProFormTextArea
+              name="content"
+              label={"正文"}
+              width="md"
+              rules={[
+                  {
+                      required: false,
+                      message: "请输入正文！",
+                  },
+              ]}
+          />
       </StepsForm.StepForm>
     </StepsForm>
   );

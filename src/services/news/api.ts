@@ -100,8 +100,11 @@ export const useGetNewsDetail = (id: number | undefined) => {
 
 export async function updateNew(options?: { [key: string]: any }) {
   // TODO: 修改请求方式和路径
-  // return request<API.NewListItem>('/api/news/{id}', {
-  //     method: 'PUT',
-  //     ...(options || {}),
-  // });
+  return useFetcher<string>({
+    input: `/api/news/${options?.id}`,
+    init: {
+      method: "POST",
+      body: JSON.stringify(options)
+    },
+  });
 }

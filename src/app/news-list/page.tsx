@@ -38,11 +38,15 @@ import React, { useEffect, useRef, useState } from "react";
 const handleUpdate = async (fields: FormValueType) => {
   const hide = message.loading("Configuring");
   try {
-    // TODO: 新闻字段修改
     await updateNew({
-      title: fields.title,
-      source: fields.source,
       id: fields.id,
+      title: fields.title,
+      date: fields.title,
+      source: fields.title,
+      url: fields.title,
+      category: fields.title,
+      keywords: fields.title,
+      content: fields.content,
     });
     hide();
     message.success("Configuration is successful");
@@ -71,6 +75,28 @@ const handleRemove = async (selectedRows: NewListItem[]) => {
   }
 };
 
+let mockNews = [generateFakeNew(),generateFakeNew(),generateFakeNew()];
+
+function generateFakeNew() {
+  const id = Math.floor(Math.random() * 10000); // 随机生成一个小于10000的整数
+  const title = `Title ${id}`; // 标题可以简单地与ID关联
+  const date = `2024-${Math.floor(Math.random() * 12) + 1}-${Math.floor(Math.random() * 28) + 1}`; // 随机生成一个日期
+  const source = `Source ${id}`; // 来源也可以与ID关联
+  const url = Math.random() > 0.5 ? `http://example.com/${id}` : undefined; // 随机决定是否包含URL
+  const category = Math.random() > 0.5 ? `Category ${id % 10}` : undefined; // 随机决定是否包含分类
+  const keywords = `Keyword1, Keyword2, Keyword${id % 5}`; // 随机生成一些关键词
+
+  return {
+    id,
+    title,
+    date,
+    source,
+    url,
+    category,
+    keywords
+  };
+}
+
 const TableList: React.FC = () => {
   const [updateModalVisible, handleUpdateModalVisible] =
     useState<boolean>(false);
@@ -93,7 +119,7 @@ const TableList: React.FC = () => {
     {
       title: "新闻标题",
       dataIndex: "title",
-      tip: "支持模糊搜索",
+      tip: "支持搜索功能",
       render: (dom, entity) => {
         return (
           <a
@@ -138,44 +164,48 @@ const TableList: React.FC = () => {
       dataIndex: "option",
       valueType: "option",
       render: (_, record) => [
-        <a key="config" onClick={() => message.info("wait")}>
+        <a key="config" onClick={() =>{
+          handleUpdateModalVisible(true);
+          setCurrentRow(record);}
+        }>
           更改
         </a>,
       ],
     },
   ];
-  useEffect(() => {
-    // 由于模糊搜索+普通展示的接口不同，且前者不分页，后者做分页处理，因此需要进行条件区分，统一注入到dataSource
-    const fetchData = async () => {
-      if (
-        fuzzySearchProps.sentence !== "" &&
-        (fuzzySearchProps.sentence !== prevFuzzyProps?.sentence || // 防止页面切换时触发重新请求
-          fuzzySearchProps.top !== prevFuzzyProps.top) // 防止top修改时不触发重新请求
-      ) {
-        const data = await fuzzySearchNewsList(fuzzySearchProps);
-        setDataSource(data);
-        setPagination({
-          current: 1,
-          pageSize: data.length,
-          total: data.length, // 后端没有分页，所以可以通过length知道total
-        });
-      } else if (fuzzySearchProps.sentence === "") {
-        console.log(pagination);
-        const data = await getNewsList(pagination);
-        setDataSource(data.data);
-        setPagination((prev) => ({
-          ...prev,
-          total: data.total, // 后端分页了，所以需要后端传total过来
-        }));
-      }
-    };
-    fetchData();
-  }, [
-    pagination.current,
-    pagination.pageSize,
-    fuzzySearchProps.sentence,
-    fuzzySearchProps.top,
-  ]);
+  // useEffect(() => {
+  //   // 由于模糊搜索+普通展示的接口不同，且前者不分页，后者做分页处理，因此需要进行条件区分，统一注入到dataSource
+  //   const fetchData = async () => {
+  //     if (
+  //       fuzzySearchProps.sentence !== "" &&
+  //       (fuzzySearchProps.sentence !== prevFuzzyProps?.sentence || // 防止页面切换时触发重新请求
+  //         fuzzySearchProps.top !== prevFuzzyProps.top) // 防止top修改时不触发重新请求
+  //     ) {
+  //       const data = await fuzzySearchNewsList(fuzzySearchProps);
+  //       setDataSource(data);
+  //       setPagination({
+  //         current: 1,
+  //         pageSize: data.length,
+  //         total: data.length, // 后端没有分页，所以可以通过length知道total
+  //       });
+  //     } else if (fuzzySearchProps.sentence === "") {
+  //       console.log(pagination);
+  //       const data = await getNewsList(pagination);
+  //       setDataSource(data.data);
+  //       setPagination((prev) => ({
+  //         ...prev,
+  //         total: data.total, // 后端分页了，所以需要后端传total过来
+  //       }));
+  //     }
+  //   };
+  //   fetchData();
+  // }, [
+  //   pagination.current,
+  //   pagination.pageSize,
+  //   fuzzySearchProps.sentence,
+  //   fuzzySearchProps.top,
+  // ]);
+
   return (
     <div style={{ backgroundColor: "#fff" }}>
       <PageContainer>
@@ -184,7 +214,8 @@ const TableList: React.FC = () => {
           actionRef={actionRef}
           rowKey={(record) => record.id}
           search={false}
-          dataSource={dataSource}
+          // dataSource={dataSource}
+            dataSource={mockNews}
           columns={columns}
           rowSelection={{
             onChange: (_, selectedRows) => {
@@ -206,7 +237,7 @@ const TableList: React.FC = () => {
           toolbar={{
             search: (
               <>
-                <Tooltip title="支持模糊搜索">
+                <Tooltip title="请至少输入2个字符">
                   <Input.Search
                     placeholder="请搜索"
                     onSearch={(value) => {
@@ -224,7 +255,7 @@ const TableList: React.FC = () => {
             ),
             actions: [
               <>
-                <Typography.Text>模糊搜索数：</Typography.Text>
+                <Typography.Text>检索数量：</Typography.Text>
                 <Select
                   defaultValue={10}
                   options={[
@@ -274,7 +305,10 @@ const TableList: React.FC = () => {
 
         <UpdateForm
           onSubmit={async (value) => {
+            // console.log("表格： ")
+            // console.log(value);
             const success = await handleUpdate(value);
+            // const success = true;
             if (success) {
               handleUpdateModalVisible(false);
               setCurrentRow(undefined);
@@ -292,6 +326,7 @@ const TableList: React.FC = () => {
           updateModalVisible={updateModalVisible}
           values={currentRow || {}}
         />
+
         <DetailDrawer
           onClose={() => setShowDetail(false)}
           showDetail={showDetail}
