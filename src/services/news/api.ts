@@ -41,24 +41,25 @@ export async function removeNew({ key }: { key: (number | undefined)[] }) {
   return deleteResults;
 }
 
-export async function getNewsList(params: ProTablePagination) {
-  console.log("getNewsList");
-  // console.log(sort, fliter);
-  const data = await Fetcher<NewList>({
-    input: `/api/news/list?${new URLSearchParams(
+export async function getNewsList(params: ProTablePagination, source?: string, start?: string, end?: string) {
+  let path = `/api/news/list?${new URLSearchParams(
       JSON.parse(
-        JSON.stringify({
-          size: params.pageSize,
-          current: params.current - 1, //TODO
-        })
+          JSON.stringify({
+            size: params.pageSize,
+            current: params.current - 1, //TODO
+          })
       )
-    ).toString()}`,
+  ).toString()}`
+  if (source){
+    path += `&source=${source}`
+  }
+  if (start){
+    path += `&start=${start}&end=${end}`
+  }
+  const data = await Fetcher<NewList>({
+    input: path,
     init: {},
   });
-  // const { data } = useGet<NewList,Pagination>('/api/news/list',{
-  //   current:params.current ?? 0,
-  //   size:params.pageSize ?? 10
-  // }) 不能直接调用hook - 如果在request中使用的话
   return {
     data: data.page,
     total: data.count * params.pageSize, //TODO： total的计算后端应该直接返回

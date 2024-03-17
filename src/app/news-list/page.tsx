@@ -119,6 +119,7 @@ const TableList: React.FC = () => {
     {
       title: "新闻标题",
       dataIndex: "title",
+      search: false,
       tip: "支持搜索功能",
       render: (dom, entity) => {
         return (
@@ -147,15 +148,18 @@ const TableList: React.FC = () => {
     {
       title: "发布网址",
       dataIndex: "url",
+      search: false,
       valueType: "textarea",
     },
     {
       title: "类别",
       dataIndex: "category",
+      search: false,
       valueType: "textarea",
     },
     {
       title: "关键词",
+      search: false,
       dataIndex: "keywords",
       valueType: "textarea",
     },
@@ -213,8 +217,40 @@ const TableList: React.FC = () => {
           headerTitle={"查询新闻"}
           actionRef={actionRef}
           rowKey={(record) => record.id}
-          search={false}
+          // search={false}
           // dataSource={dataSource}
+          search={{
+            labelWidth: 120,
+            optionRender: (searchConfig, {form}, dom) => [
+              <Button
+                  key="searchText"
+                  type="primary"
+                  onClick={async () => {
+                    let source = form?.getFieldValue("source");
+                    let start = form?.getFieldValue("date");
+                    start = start.toISOString().split('T')[0];
+                    let end = start
+                    setFuzzySearchProps({sentence: "", top: 10})
+                    const data = await getNewsList(pagination, source, start, end);
+                    setDataSource(data.data);
+                    setPagination((prev) => ({
+                      ...prev,
+                      total: data.total, // 后端分页了，所以需要后端传total过来
+                    }));
+                  }}
+              >
+                {searchConfig.searchText}
+              </Button>,
+              <Button
+                  key="resetText"
+                  onClick={() => {
+                    form?.resetFields();
+                  }}
+              >
+                {searchConfig.resetText}
+              </Button>
+            ]
+          }}
             dataSource={mockNews}
           columns={columns}
           rowSelection={{
