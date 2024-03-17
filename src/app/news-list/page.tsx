@@ -28,7 +28,6 @@ import {
 } from "@ant-design/pro-components";
 import {
   Button,
-  DatePicker,
   Drawer,
   Input,
   Select,
@@ -37,46 +36,6 @@ import {
   message,
 } from "antd";
 import React, { useEffect, useRef, useState } from "react";
-
-const handleUpdate = async (fields: FormValueType) => {
-  const hide = message.loading("Configuring");
-  try {
-    await updateNew({
-      id: fields.id,
-      title: fields.title,
-      date: fields.title,
-      source: fields.title,
-      url: fields.title,
-      category: fields.title,
-      keywords: fields.title,
-      content: fields.content,
-    });
-    hide();
-    message.success("Configuration is successful");
-    return true;
-  } catch (error) {
-    hide();
-    message.error("Configuration failed, please try again!");
-    return false;
-  }
-};
-
-const handleRemove = async (selectedRows: NewListItem[]) => {
-  const hide = message.loading("正在删除");
-  if (!selectedRows) return true;
-  try {
-    await removeNew({
-      key: selectedRows.map((row) => row.id),
-    });
-    hide();
-    message.success("Deleted successfully and will refresh soon");
-    return true;
-  } catch (error) {
-    hide();
-    message.error("Delete failed, please try again");
-    return false;
-  }
-};
 
 let mockNews = [generateFakeNew(), generateFakeNew(), generateFakeNew()];
 
@@ -103,11 +62,58 @@ function generateFakeNew() {
 }
 
 const TableList: React.FC = () => {
+  const handleUpdate = async (fields: FormValueType) => {
+    // const hide = message.loading("Configuring");
+    try {
+      if (
+        fields.category === undefined ||
+        fields.keywords === undefined ||
+        fields.content === undefined ||
+        fields.url === undefined
+      ) {
+        throw new Error("undefined error");
+      }
+      await updateNew({
+        id: fields.id,
+        title: fields.title,
+        date: fields.date,
+        source: fields.source,
+        url: fields.url,
+        category: fields.category,
+        keywords: fields.keywords,
+        content: fields.content,
+      });
+      // hide();
+      // message.success("Configuration is successful");
+      return true;
+    } catch (error) {
+      // hide();
+      // message.error("Configuration failed, please try again!");
+      return false;
+    }
+  };
+
+  const handleRemove = async (selectedRows: NewListItem[]) => {
+    const hide = message.loading("正在删除");
+    if (!selectedRows) return true;
+    try {
+      await removeNew({
+        key: selectedRows.map((row) => row.id),
+      });
+      hide();
+      message.success("Deleted successfully and will refresh soon");
+      return true;
+    } catch (error) {
+      hide();
+      message.error("Delete failed, please try again");
+      return false;
+    }
+  };
   const [updateModalVisible, handleUpdateModalVisible] =
     useState<boolean>(false);
   const [showDetail, setShowDetail] = useState<boolean>(false);
   const actionRef = useRef<ActionType>();
-  const formRef = useRef<ProFormInstance | undefined>()
+  const formRef = useRef<ProFormInstance | undefined>();
   const [currentRow, setCurrentRow] = useState<NewListItem>();
   const [dataSource, setDataSource] = useState<NewListItem[]>();
   const [pagination, setPagination] = useState<ProTablePagination>({
@@ -223,9 +229,9 @@ const TableList: React.FC = () => {
           pageSize: data.length,
           total: data.length, // 后端没有分页，所以可以通过length知道total
         });
-        formRef.current?.resetFields()
+        formRef.current?.resetFields();
       } else if (fuzzySearchProps.sentence === "") {
-        const data = await getNewsList(pagination,searchParams);
+        const data = await getNewsList(pagination, searchParams);
         setDataSource(data.data);
         setPagination((prev) => ({
           ...prev,
@@ -382,16 +388,16 @@ const TableList: React.FC = () => {
 
         <UpdateForm
           onSubmit={async (value) => {
-            // console.log("表格： ")
-            // console.log(value);
             const success = await handleUpdate(value);
-            // const success = true;
             if (success) {
               handleUpdateModalVisible(false);
               setCurrentRow(undefined);
+              message.success("更新成功");
               if (actionRef.current) {
                 actionRef.current.reload();
               }
+            } else {
+              message.error("更新失败");
             }
           }}
           onCancel={() => {

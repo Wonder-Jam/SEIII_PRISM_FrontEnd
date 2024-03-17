@@ -8,8 +8,8 @@ export type NewListItem = {
   title: string;
   date: string;
   source: string;
-  url?: string;
-  category?: string;
+  url: string;
+  category: string;
   keywords: string;
 };
 
@@ -107,13 +107,15 @@ export const useGetNewsDetail = (id: number | undefined) => {
   });
 };
 
-export async function updateNew(options?: { [key: string]: any }) {
-  // TODO: 修改请求方式和路径
-  return useFetcher<string>({
-    input: `/api/news/${options?.id}`,
+export async function updateNew(params: NewListItem & { content: string }) {
+  return Fetcher<string>({ // 不能使用hook
+    input: `/api/news/${params.id}`,
     init: {
-      method: "POST",
-      body: JSON.stringify(options),
+      method: "PATCH",
+      body: JSON.stringify(params),
+      headers: {
+        "Content-Type": "application/json",
+      },
     },
   });
 }
