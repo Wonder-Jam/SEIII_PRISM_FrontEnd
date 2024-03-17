@@ -177,38 +177,38 @@ const TableList: React.FC = () => {
       ],
     },
   ];
-  // useEffect(() => {
-  //   // 由于模糊搜索+普通展示的接口不同，且前者不分页，后者做分页处理，因此需要进行条件区分，统一注入到dataSource
-  //   const fetchData = async () => {
-  //     if (
-  //       fuzzySearchProps.sentence !== "" &&
-  //       (fuzzySearchProps.sentence !== prevFuzzyProps?.sentence || // 防止页面切换时触发重新请求
-  //         fuzzySearchProps.top !== prevFuzzyProps.top) // 防止top修改时不触发重新请求
-  //     ) {
-  //       const data = await fuzzySearchNewsList(fuzzySearchProps);
-  //       setDataSource(data);
-  //       setPagination({
-  //         current: 1,
-  //         pageSize: data.length,
-  //         total: data.length, // 后端没有分页，所以可以通过length知道total
-  //       });
-  //     } else if (fuzzySearchProps.sentence === "") {
-  //       console.log(pagination);
-  //       const data = await getNewsList(pagination);
-  //       setDataSource(data.data);
-  //       setPagination((prev) => ({
-  //         ...prev,
-  //         total: data.total, // 后端分页了，所以需要后端传total过来
-  //       }));
-  //     }
-  //   };
-  //   fetchData();
-  // }, [
-  //   pagination.current,
-  //   pagination.pageSize,
-  //   fuzzySearchProps.sentence,
-  //   fuzzySearchProps.top,
-  // ]);
+  useEffect(() => {
+    // 由于模糊搜索+普通展示的接口不同，且前者不分页，后者做分页处理，因此需要进行条件区分，统一注入到dataSource
+    const fetchData = async () => {
+      if (
+        fuzzySearchProps.sentence !== "" &&
+        (fuzzySearchProps.sentence !== prevFuzzyProps?.sentence || // 防止页面切换时触发重新请求
+          fuzzySearchProps.top !== prevFuzzyProps.top) // 防止top修改时不触发重新请求
+      ) {
+        const data = await fuzzySearchNewsList(fuzzySearchProps);
+        setDataSource(data);
+        setPagination({
+          current: 1,
+          pageSize: data.length,
+          total: data.length, // 后端没有分页，所以可以通过length知道total
+        });
+      } else if (fuzzySearchProps.sentence === "") {
+        console.log(pagination);
+        const data = await getNewsList(pagination);
+        setDataSource(data.data);
+        setPagination((prev) => ({
+          ...prev,
+          total: data.total, // 后端分页了，所以需要后端传total过来
+        }));
+      }
+    };
+    fetchData();
+  }, [
+    pagination.current,
+    pagination.pageSize,
+    fuzzySearchProps.sentence,
+    fuzzySearchProps.top,
+  ]);
 
   return (
     <div style={{ backgroundColor: "#fff" }}>
@@ -218,7 +218,7 @@ const TableList: React.FC = () => {
           actionRef={actionRef}
           rowKey={(record) => record.id}
           // search={false}
-          // dataSource={dataSource}
+          dataSource={dataSource}
           search={{
             labelWidth: 120,
             optionRender: (searchConfig, {form}, dom) => [
@@ -251,7 +251,7 @@ const TableList: React.FC = () => {
               </Button>
             ]
           }}
-            dataSource={mockNews}
+            // dataSource={mockNews}
           columns={columns}
           rowSelection={{
             onChange: (_, selectedRows) => {
