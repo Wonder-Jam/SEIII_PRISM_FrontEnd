@@ -6,6 +6,7 @@ import {
   NewListItem,
   Pagination,
   ProTablePagination,
+  SearchParams,
   fuzzySearchNewsList,
   getNewsList,
   removeNew,
@@ -16,6 +17,7 @@ import type {
   ActionType,
   ProColumns,
   ProDescriptionsItemProps,
+  ProFormInstance,
 } from "@ant-design/pro-components";
 import {
   FooterToolbar,
@@ -26,6 +28,7 @@ import {
 } from "@ant-design/pro-components";
 import {
   Button,
+  DatePicker,
   Drawer,
   Input,
   Select,
@@ -75,12 +78,14 @@ const handleRemove = async (selectedRows: NewListItem[]) => {
   }
 };
 
-let mockNews = [generateFakeNew(),generateFakeNew(),generateFakeNew()];
+let mockNews = [generateFakeNew(), generateFakeNew(), generateFakeNew()];
 
 function generateFakeNew() {
   const id = Math.floor(Math.random() * 10000); // 随机生成一个小于10000的整数
   const title = `Title ${id}`; // 标题可以简单地与ID关联
-  const date = `2024-${Math.floor(Math.random() * 12) + 1}-${Math.floor(Math.random() * 28) + 1}`; // 随机生成一个日期
+  const date = `2024-${Math.floor(Math.random() * 12) + 1}-${
+    Math.floor(Math.random() * 28) + 1
+  }`; // 随机生成一个日期
   const source = `Source ${id}`; // 来源也可以与ID关联
   const url = Math.random() > 0.5 ? `http://example.com/${id}` : undefined; // 随机决定是否包含URL
   const category = Math.random() > 0.5 ? `Category ${id % 10}` : undefined; // 随机决定是否包含分类
@@ -93,7 +98,7 @@ function generateFakeNew() {
     source,
     url,
     category,
-    keywords
+    keywords,
   };
 }
 
@@ -102,6 +107,7 @@ const TableList: React.FC = () => {
     useState<boolean>(false);
   const [showDetail, setShowDetail] = useState<boolean>(false);
   const actionRef = useRef<ActionType>();
+  const formRef = useRef<ProFormInstance | undefined>()
   const [currentRow, setCurrentRow] = useState<NewListItem>();
   const [dataSource, setDataSource] = useState<NewListItem[]>();
   const [pagination, setPagination] = useState<ProTablePagination>({
@@ -115,6 +121,7 @@ const TableList: React.FC = () => {
   });
   const prevFuzzyProps = usePrevious(fuzzySearchProps);
   const [selectedRowsState, setSelectedRows] = useState<NewListItem[]>([]);
+  const [searchParams, setSearchParams] = useState<SearchParams>({});
   const columns: ProColumns<NewListItem>[] = [
     {
       title: "新闻标题",
@@ -135,10 +142,31 @@ const TableList: React.FC = () => {
       },
     },
     {
+      title: "开始日期",
+      hideInForm: true,
+      hideInTable: true,
+      hideInDescriptions: true,
+      hideInSetting: true,
+      hideInSearch: false,
+      dataIndex: "startDate",
+      valueType: "date",
+    },
+    {
+      title: "截止日期",
+      hideInForm: true,
+      hideInTable: true,
+      hideInDescriptions: true,
+      hideInSetting: true,
+      hideInSearch: false,
+      dataIndex: "endDate",
+      valueType: "date",
+    },
+    {
       title: "发布日期",
-      sorter: true,
+      // sorter: true, 由于是分页，不太好做sorted处理 - 需要在sort的时候发起数据请求
       dataIndex: "date",
       valueType: "date",
+      search: false,
     },
     {
       title: "发布来源",
@@ -168,10 +196,13 @@ const TableList: React.FC = () => {
       dataIndex: "option",
       valueType: "option",
       render: (_, record) => [
-        <a key="config" onClick={() =>{
-          handleUpdateModalVisible(true);
-          setCurrentRow(record);}
-        }>
+        <a
+          key="config"
+          onClick={() => {
+            handleUpdateModalVisible(true);
+            setCurrentRow(record);
+          }}
+        >
           更改
         </a>,
       ],
@@ -192,9 +223,9 @@ const TableList: React.FC = () => {
           pageSize: data.length,
           total: data.length, // 后端没有分页，所以可以通过length知道total
         });
+        formRef.current?.resetFields()
       } else if (fuzzySearchProps.sentence === "") {
-        console.log(pagination);
-        const data = await getNewsList(pagination);
+        const data = await getNewsList(pagination,searchParams);
         setDataSource(data.data);
         setPagination((prev) => ({
           ...prev,
@@ -216,42 +247,52 @@ const TableList: React.FC = () => {
         <ProTable<NewListItem, Pagination>
           headerTitle={"查询新闻"}
           actionRef={actionRef}
+          formRef={formRef}
           rowKey={(record) => record.id}
           // search={false}
           dataSource={dataSource}
           search={{
             labelWidth: 120,
-            optionRender: (searchConfig, {form}, dom) => [
+            collapsed: false,
+            collapseRender: false,
+            optionRender: (searchConfig, { form }, dom) => [
               <Button
-                  key="searchText"
-                  type="primary"
-                  onClick={async () => {
-                    let source = form?.getFieldValue("source");
-                    let start = form?.getFieldValue("date");
-                    start = start.toISOString().split('T')[0];
-                    let end = start
-                    setFuzzySearchProps({sentence: "", top: 10})
-                    const data = await getNewsList(pagination, source, start, end);
-                    setDataSource(data.data);
-                    setPagination((prev) => ({
-                      ...prev,
-                      total: data.total, // 后端分页了，所以需要后端传total过来
-                    }));
-                  }}
+                key="searchText"
+                type="primary"
+                onClick={async () => {
+                  let source = form?.getFieldValue("source");
+                  let start = form?.getFieldValue("startDate");
+                  let end = form?.getFieldValue("endDate");
+                  start = start?.toISOString().split("T")[0];
+                  end = end?.toISOString().split("T")[0];
+                  console.log(start, end);
+                  setFuzzySearchProps({ sentence: "", top: 10 });
+                  const data = await getNewsList(pagination, {
+                    start,
+                    end,
+                    source,
+                  });
+                  setSearchParams({ start, end, source });
+                  setDataSource(data.data);
+                  setPagination((prev) => ({
+                    ...prev,
+                    total: data.total, // 后端分页了，所以需要后端传total过来
+                  }));
+                }}
               >
                 {searchConfig.searchText}
               </Button>,
               <Button
-                  key="resetText"
-                  onClick={() => {
-                    form?.resetFields();
-                  }}
+                key="resetText"
+                onClick={() => {
+                  form?.resetFields();
+                }}
               >
                 {searchConfig.resetText}
-              </Button>
-            ]
+              </Button>,
+            ],
           }}
-            // dataSource={mockNews}
+          // dataSource={mockNews}
           columns={columns}
           rowSelection={{
             onChange: (_, selectedRows) => {

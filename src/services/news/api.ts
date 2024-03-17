@@ -27,7 +27,11 @@ export type Pagination = {
   size: number;
   current: number;
 };
-
+export type SearchParams = {
+  source?: string;
+  start?: string;
+  end?: string;
+};
 export async function removeNew({ key }: { key: (number | undefined)[] }) {
   const deletePromise = key.map((id) => {
     return Fetcher({
@@ -41,20 +45,24 @@ export async function removeNew({ key }: { key: (number | undefined)[] }) {
   return deleteResults;
 }
 
-export async function getNewsList(params: ProTablePagination, source?: string, start?: string, end?: string) {
+export async function getNewsList(
+  params: ProTablePagination,
+  searchParams: SearchParams
+) {
+  const { source, start, end } = searchParams;
   let path = `/api/news/list?${new URLSearchParams(
-      JSON.parse(
-          JSON.stringify({
-            size: params.pageSize,
-            current: params.current - 1, //TODO
-          })
-      )
-  ).toString()}`
-  if (source){
-    path += `&source=${source}`
+    JSON.parse(
+      JSON.stringify({
+        size: params.pageSize,
+        current: params.current - 1, //TODO
+      })
+    )
+  ).toString()}`;
+  if (source) {
+    path += `&source=${source}`;
   }
-  if (start){
-    path += `&start=${start}&end=${end}`
+  if (start) {
+    path += `&start=${start}&end=${end}`;
   }
   const data = await Fetcher<NewList>({
     input: path,
@@ -105,7 +113,7 @@ export async function updateNew(options?: { [key: string]: any }) {
     input: `/api/news/${options?.id}`,
     init: {
       method: "POST",
-      body: JSON.stringify(options)
+      body: JSON.stringify(options),
     },
   });
 }

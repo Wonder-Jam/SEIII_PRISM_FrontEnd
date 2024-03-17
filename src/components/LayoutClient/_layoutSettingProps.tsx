@@ -10,7 +10,7 @@ import { Dropdown, Typography } from "antd";
 import { SearchInput } from "../SearchInput";
 import Image from "next/image";
 export const _layoutSettingProps: ProLayoutProps = {
-  breadcrumbRender: (router) => undefined,
+  breadcrumbRender: undefined,
   token: {
     header: {
       colorBgMenuItemSelected: "rgba(0,0,0,0.04)",
