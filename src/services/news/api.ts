@@ -113,6 +113,9 @@ export async function updateNew(params: NewListItem & { content: string }) {
     init: {
       method: "PATCH",
       body: JSON.stringify(params),
+      headers: {
+        "Content-Type": "application/json",
+      },
     },
   });
 }
