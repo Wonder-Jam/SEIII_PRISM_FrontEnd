@@ -1,6 +1,20 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+## 团队名称
+**`Hardly Term.`**
+## 项目人员
+| 姓名   | 邮箱                          |
+| ------ | ----------------------------- |
+| 刘尧力 | 211250165@smail.nju.edu.cn    |
+| 梁安然 | 211250127@smail.nju.edu.cn    |
+| 邹丁   | 211250164@smail.nju.edu.cn    |
+| 焦豪捷 | 211250144@smail.nju.edu.cn    |
+| 陈锦华 | 211250069@smail.nju.edu.cn    |
+| 时国皓 | 211250033@smail.nju.edu.cn    |
+## 项目说明
+1. 基于`@ant-design/pro-components`UI框架搭建，配合Next.js路由完成页面，后续考虑分割`@ant-design/pro-components`，从而更好的使用SSR
+2. 基于`@vercel/speed-insights`进行性能监控，从而进行性能优化
+3. 后期考虑基于CDN进行静态资源部署，基于`Ant Design Chart`和`canvas`进行图表展示，基于qiankun进行微前端部署，并搭建对应的白屏性能监控系统
 
-## Getting Started
+## 快速开始
 
 First, run the development server:
 
