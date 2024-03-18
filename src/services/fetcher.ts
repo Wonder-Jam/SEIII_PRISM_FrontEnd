@@ -46,6 +46,11 @@ export const useFetcher = <T>(
       try {
         window.setTimeout(() => controller.abort(), 30000);
         const response = await fetch(params.input, {
+          headers: {
+            ...params.init.headers,
+            "Host": "47.120.33.250",
+            "Content-Type": "application/json",
+          },
           ...params.init,
           credentials: "include",
         }).catch(() => {
