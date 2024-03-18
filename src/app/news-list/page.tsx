@@ -171,8 +171,11 @@ const TableList: React.FC = () => {
       title: "发布日期",
       // sorter: true, 由于是分页，不太好做sorted处理 - 需要在sort的时候发起数据请求
       dataIndex: "date",
-      valueType: "date",
+      // valueType: "date",
       search: false,
+      render:(dom,entity,index) => {
+        return new Date(entity.date)?.toISOString().split("T")[0]
+      },
     },
     {
       title: "发布来源",
