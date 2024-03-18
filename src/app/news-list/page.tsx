@@ -83,6 +83,7 @@ const TableList: React.FC = () => {
         keywords: fields.keywords,
         content: fields.content,
       });
+      setIsChanged(true);
       // hide();
       // message.success("Configuration is successful");
       return true;
@@ -101,7 +102,8 @@ const TableList: React.FC = () => {
         key: selectedRows.map((row) => row.id),
       });
       hide();
-      message.success("Deleted successfully and will refresh soon");
+      setIsChanged(true);
+      // message.success("Deleted successfully and will refresh soon");
       return true;
     } catch (error) {
       hide();
@@ -217,6 +219,8 @@ const TableList: React.FC = () => {
       ],
     },
   ];
+
+  const [isChanged, setIsChanged] = useState(false);
   useEffect(() => {
     // 由于模糊搜索+普通展示的接口不同，且前者不分页，后者做分页处理，因此需要进行条件区分，统一注入到dataSource
     const fetchData = async () => {
@@ -242,12 +246,14 @@ const TableList: React.FC = () => {
         }));
       }
     };
+    setIsChanged(false);
     fetchData();
   }, [
     pagination.current,
     pagination.pageSize,
     fuzzySearchProps.sentence,
     fuzzySearchProps.top,
+    isChanged,
   ]);
 
   return (
